@@ -30,7 +30,8 @@ public class Alfred {
             + "       *****             *****              *****        \n"
             + "          ***             ***              ***           \n"
             + "            **             *              **             \n";
-    private static final String[] taskList = new String[100]; // Array to store list of tasks
+    private static final String[] taskList = new String[100]; // Array to store task descriptions
+    private static final boolean[] taskStatus = new boolean[100]; // Tracks whether each task is done
     private static int taskCount = 0; // Counter to keep track of the number of tasks
 
     public static void main(String[] args) {
@@ -53,9 +54,55 @@ public class Alfred {
             }
 
             //Level 2. list out tasks
-            else if (command.equals("list")){
+            else if (command.equals("list")) {
+                System.out.println("Here are the tasks in your list:");
                 for (int i = 0; i < taskCount; i++) {
-                    System.out.println((i + 1) + ". " + taskList[i]);
+                    String statusIcon = taskStatus[i] ? "X" : " ";
+                    System.out.println((i + 1) + ".[" + statusIcon + "] " + taskList[i]);
+                }
+            }
+
+            //Level 3. mark a task as not completed
+            else if (command.startsWith("unmark")) {
+                String[] parts = command.trim().split("\\s+");
+                if (parts.length == 2) {
+                    try {
+                        int taskNumber = Integer.parseInt(parts[1]);
+                        if (taskNumber >= 1 && taskNumber <= taskCount) {
+                            int taskIndex = taskNumber - 1;
+                            taskStatus[taskIndex] = false;
+                            System.out.println("OK, I've marked this task as not done yet:");
+                            System.out.println("  [ ] " + taskList[taskIndex]);
+                        } else {
+                            System.out.println("Invalid task number.");
+                        }
+                    } catch (NumberFormatException e) {
+                        System.out.println("Please provide a valid task number.");
+                    }
+                } else {
+                    System.out.println("Please provide a task number to mark as not done.");
+                }
+            }
+
+            //Level 3. mark a task as completed
+            else if (command.startsWith("mark")) {
+                String[] parts = command.trim().split("\\s+");
+                if (parts.length == 2) {
+                    try {
+                        int taskNumber = Integer.parseInt(parts[1]);
+                        if (taskNumber >= 1 && taskNumber <= taskCount) {
+                            int taskIndex = taskNumber - 1;
+                            taskStatus[taskIndex] = true;
+                            System.out.println("Nice! I've marked this task as done:");
+                            System.out.println("  [X] " + taskList[taskIndex]);
+                        } else {
+                            System.out.println("Invalid task number.");
+                        }
+                    } catch (NumberFormatException e) {
+                        System.out.println("Please provide a valid task number.");
+                    }
+                } else {
+                    System.out.println("Please provide a task number to mark as done.");
                 }
             }
 
