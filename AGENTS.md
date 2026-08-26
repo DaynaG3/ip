@@ -34,6 +34,7 @@ For every Java code creation, edit, refactor, or review in this repository, use 
 
 ## Git
 
+For every proposed or created commit message and every branch name in this repository, use the project-local `seedu-git-standard` skill at `.codex/skills/seedu-git-standard/SKILL.md` and follow it. This requirement is mandatory for all future commits.
+
 Use lightweight tags unless the user requests an annotated tag.
-When proposing or creating a commit message, include enough detail to explain the rationale for the change.
 Do not commit or push unless explicitly asked.
