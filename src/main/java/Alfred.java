@@ -30,8 +30,7 @@ public class Alfred {
             + "       *****             *****              *****        \n"
             + "          ***             ***              ***           \n"
             + "            **             *              **             \n";
-    private static final String[] taskList = new String[100]; // Array to store task descriptions
-    private static final boolean[] taskStatus = new boolean[100]; // Tracks whether each task is done
+    private static final Task[] taskList = new Task[100]; // Array to store tasks
     private static int taskCount = 0; // Counter to keep track of the number of tasks
 
     public static void main(String[] args) {
@@ -57,8 +56,7 @@ public class Alfred {
             else if (command.equals("list")) {
                 System.out.println("Here are the tasks in your list:");
                 for (int i = 0; i < taskCount; i++) {
-                    String statusIcon = taskStatus[i] ? "X" : " ";
-                    System.out.println((i + 1) + ".[" + statusIcon + "] " + taskList[i]);
+                    System.out.println((i + 1) + "." + taskList[i]);
                 }
             }
 
@@ -70,9 +68,10 @@ public class Alfred {
                         int taskNumber = Integer.parseInt(parts[1]);
                         if (taskNumber >= 1 && taskNumber <= taskCount) {
                             int taskIndex = taskNumber - 1;
-                            taskStatus[taskIndex] = false;
+                            Task task = taskList[taskIndex];
+                            task.markAsNotDone();
                             System.out.println("OK, I've marked this task as not done yet:");
-                            System.out.println("  [ ] " + taskList[taskIndex]);
+                            System.out.println("  " + task);
                         } else {
                             System.out.println("Invalid task number.");
                         }
@@ -92,9 +91,10 @@ public class Alfred {
                         int taskNumber = Integer.parseInt(parts[1]);
                         if (taskNumber >= 1 && taskNumber <= taskCount) {
                             int taskIndex = taskNumber - 1;
-                            taskStatus[taskIndex] = true;
+                            Task task = taskList[taskIndex];
+                            task.markAsDone();
                             System.out.println("Nice! I've marked this task as done:");
-                            System.out.println("  [X] " + taskList[taskIndex]);
+                            System.out.println("  " + task);
                         } else {
                             System.out.println("Invalid task number.");
                         }
@@ -109,7 +109,7 @@ public class Alfred {
             //Level 2. add a new task
             else {
                 if (taskCount < taskList.length) {
-                    taskList[taskCount] = command;
+                    taskList[taskCount] = new Task(command);
                     taskCount++;
                     //Level 1. Echo the command back to the user
                     System.out.println("added: " + command);
