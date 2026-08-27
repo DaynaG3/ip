@@ -6,17 +6,18 @@ import java.util.Scanner;
  * Runs the Alfred command-line chatbot.
  */
 public class Alfred {
+
     private static final int MAX_TASKS = 100;
     private static final String DIVIDER = "____________________________________________________________";
-    private static final String BANNER =
-            "         █████╗ ██╗     ███████╗██████╗ ███████╗██████╗\n"
+    private static final String BANNER
+            = "         █████╗ ██╗     ███████╗██████╗ ███████╗██████╗\n"
             + "        ██╔══██╗██║     ██╔════╝██╔══██╗██╔════╝██╔══██╗\n"
             + "        ███████║██║     █████╗  ██████╔╝█████╗  ██║  ██║\n"
             + "        ██╔══██║██║     ██╔══╝  ██╔══██╗██╔══╝  ██║  ██║\n"
             + "        ██║  ██║███████╗██║     ██║  ██║███████╗██████╔╝\n"
             + "        ╚═╝  ╚═╝╚══════╝╚═╝     ╚═╝  ╚═╝╚══════╝╚═════╝ ";
-    private static final String BAT_LOGO =
-            "              *         *      *         *               \n"
+    private static final String BAT_LOGO
+            = "              *         *      *         *               \n"
             + "          ***          **********          ***           \n"
             + "       *****           **********           *****        \n"
             + "     *******           **********           *******      \n"
