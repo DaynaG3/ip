@@ -32,6 +32,13 @@ Ensure that Java 25 is used when running the application or build tasks. On macO
 
 For every Java code creation, edit, refactor, or review in this repository, use the project-local `seedu-java-coding-standard` skill at `.codex/skills/seedu-java-coding-standard/SKILL.md` and follow it. This requirement is mandatory for all Java code in the project.
 
+## Testing
+
+After every code update in this repository:
+
+1. Review `test/ui-test-plan.md` and update it when the change affects test aims, inputs, expected outputs, setup, build or launch commands, or other information needed for repeatable UI testing. Leave it unchanged when the existing plan still covers the change accurately.
+2. Invoke the project-local `test-ui` skill at `.codex/skills/test-ui/SKILL.md` and follow it to run the relevant UI tests. This requirement is mandatory for every code update, even when the test plan does not need to change.
+
 ## Git
 
 For every proposed or created commit message and every branch name in this repository, use the project-local `seedu-git-standard` skill at `.codex/skills/seedu-git-standard/SKILL.md` and follow it. This requirement is mandatory for all future commits.
