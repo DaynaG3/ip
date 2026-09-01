@@ -149,3 +149,63 @@ ____________________________________________________________
 ```
 
 After Step 1 passes, close standard input so the application exits normally.
+
+### TEST-04: Mark and unmark a task
+
+**Aim:** Verify that a task can be marked as done and then restored to not done.
+
+**Preconditions:** The application has just started and the in-memory task list is empty.
+
+#### Step 1
+
+**Input**
+
+```text
+todo borrow book
+```
+
+**Expected output**
+
+```text
+____________________________________________________________
+Understood Master Wayne, I've added this task:
+  [T][ ] borrow book
+Now you have 1 tasks in the list.
+____________________________________________________________
+```
+
+#### Step 2
+
+**Input**
+
+```text
+mark 1
+```
+
+**Expected output**
+
+```text
+____________________________________________________________
+Excellent work Master Wayne! I've marked this task as done:
+  [T][X] borrow book
+____________________________________________________________
+```
+
+#### Step 3
+
+**Input**
+
+```text
+unmark 1
+```
+
+**Expected output**
+
+```text
+____________________________________________________________
+Alright Master Wayne, I have unmarked this task as requested:
+  [T][ ] borrow book
+____________________________________________________________
+```
+
+After Step 3 passes, close standard input so the application exits normally.
