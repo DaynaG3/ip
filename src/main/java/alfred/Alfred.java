@@ -43,10 +43,7 @@ public class Alfred {
      * @param args Command-line arguments. Alfred does not use them.
      */
     public static void main(String[] args) {
-        System.out.println(DIVIDER + "\n");
-        System.out.println(BANNER);
-        System.out.println(DIVIDER + "\n");
-        System.out.println("Welcome home Master Wayne.\nWhat can I do for you?");
+        printWelcomeMessage();
 
         Scanner scanner = new Scanner(System.in);
         while (scanner.hasNextLine()) {
@@ -54,66 +51,111 @@ public class Alfred {
             System.out.println(DIVIDER);
 
             if (command.equals("bye")) {
-                System.out.println("Good luck Master Wayne.\n");
-                System.out.println(BAT_LOGO);
-                System.out.println(DIVIDER);
+                printGoodbyeMessage();
                 break;
-            } else if (command.equals("list")) {
-                System.out.println("These are your tasks Master Wayne:");
-                for (int i = 0; i < taskCount; i++) {
-                    System.out.println((i + 1) + "." + tasks[i]);
-                }
-            } else if (command.startsWith("unmark")) {
-                String[] parts = command.trim().split("\\s+");
-                if (parts.length == 2) {
-                    try {
-                        int taskNumber = Integer.parseInt(parts[1]);
-                        if (taskNumber >= 1 && taskNumber <= taskCount) {
-                            int taskIndex = taskNumber - 1;
-                            Task task = tasks[taskIndex];
-                            task.markAsNotDone();
-                            System.out.println("Alright Master Wayne, I have unmarked this task as requested:");
-                            System.out.println("  " + task);
-                        } else {
-                            System.out.println("Invalid task number.");
-                        }
-                    } catch (NumberFormatException exception) {
-                        System.out.println("Please provide a valid task number.");
-                    }
-                } else {
-                    System.out.println("Please provide a task number to mark as not done.");
-                }
-            } else if (command.startsWith("mark")) {
-                String[] parts = command.trim().split("\\s+");
-                if (parts.length == 2) {
-                    try {
-                        int taskNumber = Integer.parseInt(parts[1]);
-                        if (taskNumber >= 1 && taskNumber <= taskCount) {
-                            int taskIndex = taskNumber - 1;
-                            Task task = tasks[taskIndex];
-                            task.markAsDone();
-                            System.out.println("Excellent work Master Wayne! I've marked this task as done:");
-                            System.out.println("  " + task);
-                        } else {
-                            System.out.println("Invalid task number.");
-                        }
-                    } catch (NumberFormatException exception) {
-                        System.out.println("Please provide a valid task number.");
-                    }
-                } else {
-                    System.out.println("Please provide a task number to mark as done.");
-                }
-            } else if (command.equals("todo") || command.startsWith("todo ")) {
-                addTodo(command);
-            } else if (command.equals("deadline") || command.startsWith("deadline ")) {
-                addDeadline(command);
-            } else if (command.equals("event") || command.startsWith("event ")) {
-                addEvent(command);
-            } else {
-                System.out.println("Pardon me Master Wayne, I did not quite get that.");
             }
 
+            processCommand(command);
             System.out.println(DIVIDER);
+        }
+    }
+
+    /**
+     * Displays Alfred's banner and greeting.
+     */
+    private static void printWelcomeMessage() {
+        System.out.println(DIVIDER + "\n");
+        System.out.println(BANNER);
+        System.out.println(DIVIDER + "\n");
+        System.out.println("Welcome home Master Wayne.\nWhat can I do for you?");
+    }
+
+    /**
+     * Displays Alfred's farewell message and logo.
+     */
+    private static void printGoodbyeMessage() {
+        System.out.println("Good luck Master Wayne.\n");
+        System.out.println(BAT_LOGO);
+        System.out.println(DIVIDER);
+    }
+
+    /**
+     * Routes a command to the operation that handles it.
+     *
+     * @param command Full command entered by the user.
+     */
+    private static void processCommand(String command) {
+        if (command.equals("list")) {
+            printTaskList();
+        } else if (command.startsWith("unmark")) {
+            updateTaskStatus(command, false);
+        } else if (command.startsWith("mark")) {
+            updateTaskStatus(command, true);
+        } else if (command.equals("todo") || command.startsWith("todo ")) {
+            addTodo(command);
+        } else if (command.equals("deadline") || command.startsWith("deadline ")) {
+            addDeadline(command);
+        } else if (command.equals("event") || command.startsWith("event ")) {
+            addEvent(command);
+        } else {
+            System.out.println("Pardon me Master Wayne, I did not quite get that.");
+        }
+    }
+
+    /**
+     * Displays all tasks in their insertion order.
+     */
+    private static void printTaskList() {
+        System.out.println("These are your tasks Master Wayne:");
+        for (int i = 0; i < taskCount; i++) {
+            System.out.println((i + 1) + "." + tasks[i]);
+        }
+    }
+
+    /**
+     * Marks or unmarks the task identified by a status command.
+     *
+     * @param command Full command entered by the user.
+     * @param isMarkAsDone Whether the task should be marked as done.
+     */
+    private static void updateTaskStatus(String command, boolean isMarkAsDone) {
+        String[] parts = command.trim().split("\\s+");
+        if (parts.length != 2) {
+            printMissingTaskNumberError(isMarkAsDone);
+            return;
+        }
+
+        try {
+            int taskNumber = Integer.parseInt(parts[1]);
+            if (taskNumber < 1 || taskNumber > taskCount) {
+                System.out.println("Invalid task number.");
+                return;
+            }
+
+            Task task = tasks[taskNumber - 1];
+            if (isMarkAsDone) {
+                task.markAsDone();
+                System.out.println("Excellent work Master Wayne! I've marked this task as done:");
+            } else {
+                task.markAsNotDone();
+                System.out.println("Alright Master Wayne, I have unmarked this task as requested:");
+            }
+            System.out.println("  " + task);
+        } catch (NumberFormatException exception) {
+            System.out.println("Please provide a valid task number.");
+        }
+    }
+
+    /**
+     * Displays the missing-number error for a mark or unmark command.
+     *
+     * @param isMarkAsDone Whether the command was intended to mark a task as done.
+     */
+    private static void printMissingTaskNumberError(boolean isMarkAsDone) {
+        if (isMarkAsDone) {
+            System.out.println("Please provide a task number to mark as done.");
+        } else {
+            System.out.println("Please provide a task number to mark as not done.");
         }
     }
 
