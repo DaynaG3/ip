@@ -129,7 +129,7 @@ public class Alfred {
             return;
         }
 
-        addTask(Task.createTodo(description));
+        addTask(new Todo(description));
     }
 
     /**
@@ -157,7 +157,7 @@ public class Alfred {
             return;
         }
 
-        addTask(Task.createDeadline(description, deadline));
+        addTask(new Deadline(description, deadline));
     }
 
     /**
@@ -207,7 +207,7 @@ public class Alfred {
             return;
         }
 
-        addTask(Task.createEvent(description, start, end));
+        addTask(new Event(description, start, end));
     }
 
     /**

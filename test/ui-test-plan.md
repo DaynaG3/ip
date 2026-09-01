@@ -6,7 +6,7 @@ This file is the source of truth for scripted acceptance tests of the interactiv
 
 - **Required Java version:** Java 25
 - **Working directory:** Repository root
-- **Build command:** `javac -d src/main/java/out src/main/java/alfred/Alfred.java src/main/java/alfred/Task.java src/main/java/alfred/TaskType.java`
+- **Build command:** `javac -d src/main/java/out src/main/java/alfred/*.java`
 - **Launch command:** `java -cp src/main/java/out alfred.Alfred`
 - **State setup:** None. Tasks are stored only in memory and each application process starts with an empty list.
 - **State cleanup:** Close standard input after the assertions so the application exits normally.
