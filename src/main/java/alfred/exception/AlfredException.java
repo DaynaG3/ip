@@ -1,4 +1,4 @@
-package alfred;
+package alfred.exception;
 
 /**
  * Represents an error caused by an invalid Alfred command.
