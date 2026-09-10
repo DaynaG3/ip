@@ -54,8 +54,12 @@ public class Alfred {
                 printGoodbyeMessage();
                 break;
             }
+            try {
+                processCommand(command);
+            } catch (AlfredException exception) {
+                System.out.println(exception.getMessage());
+            }
 
-            processCommand(command);
             System.out.println(DIVIDER);
         }
     }
@@ -84,12 +88,12 @@ public class Alfred {
      *
      * @param command Full command entered by the user.
      */
-    private static void processCommand(String command) {
+    private static void processCommand(String command) throws AlfredException {
         if (command.equals("list")) {
             printTaskList();
-        } else if (command.startsWith("unmark")) {
+        } else if (command.equals("unmark") || command.startsWith("unmark ")) {
             updateTaskStatus(command, false);
-        } else if (command.startsWith("mark")) {
+        } else if (command.equals("mark") || command.startsWith("mark ")) {
             updateTaskStatus(command, true);
         } else if (command.equals("todo") || command.startsWith("todo ")) {
             addTodo(command);
@@ -98,7 +102,7 @@ public class Alfred {
         } else if (command.equals("event") || command.startsWith("event ")) {
             addEvent(command);
         } else {
-            System.out.println("Pardon me Master Wayne, I did not quite get that.");
+            throw new AlfredException("Pardon me Master Wayne, I did not quite get that.");
         }
     }
 
@@ -118,18 +122,19 @@ public class Alfred {
      * @param command Full command entered by the user.
      * @param isMarkAsDone Whether the task should be marked as done.
      */
-    private static void updateTaskStatus(String command, boolean isMarkAsDone) {
+    private static void updateTaskStatus(String command, boolean isMarkAsDone) throws AlfredException {
         String[] parts = command.trim().split("\\s+");
         if (parts.length != 2) {
-            printMissingTaskNumberError(isMarkAsDone);
-            return;
+            if (isMarkAsDone) {
+                throw new AlfredException("Please provide a task number to mark as done.");
+            }
+            throw new AlfredException("Please provide a task number to mark as not done.");
         }
 
         try {
             int taskNumber = Integer.parseInt(parts[1]);
             if (taskNumber < 1 || taskNumber > taskCount) {
-                System.out.println("Invalid task number.");
-                return;
+                throw new AlfredException("Invalid task number.");
             }
 
             Task task = tasks[taskNumber - 1];
@@ -142,20 +147,7 @@ public class Alfred {
             }
             System.out.println("  " + task);
         } catch (NumberFormatException exception) {
-            System.out.println("Please provide a valid task number.");
-        }
-    }
-
-    /**
-     * Displays the missing-number error for a mark or unmark command.
-     *
-     * @param isMarkAsDone Whether the command was intended to mark a task as done.
-     */
-    private static void printMissingTaskNumberError(boolean isMarkAsDone) {
-        if (isMarkAsDone) {
-            System.out.println("Please provide a task number to mark as done.");
-        } else {
-            System.out.println("Please provide a task number to mark as not done.");
+            throw new AlfredException("Please provide a valid task number.");
         }
     }
 
@@ -164,11 +156,10 @@ public class Alfred {
      *
      * @param command Full command entered by the user.
      */
-    private static void addTodo(String command) {
+    private static void addTodo(String command) throws AlfredException {
         String description = command.substring("todo".length()).trim();
         if (description.isEmpty()) {
-            System.out.println("The description of a todo cannot be empty.");
-            return;
+            throw new AlfredException("The description of a todo cannot be empty.");
         }
 
         addTask(new Todo(description));
@@ -180,37 +171,35 @@ public class Alfred {
      *
      * @param command Full command entered by the user.
      */
-    private static void addDeadline(String command) {
+    private static void addDeadline(String command) throws AlfredException {
         String arguments = command.substring("deadline".length()).trim();
         int byPosition = arguments.indexOf("/by");
         if (byPosition < 0) {
-            printDeadlineError("the /by marker is missing");
-            return;
+            throw createDeadlineException("the /by marker is missing");
         }
 
         String description = arguments.substring(0, byPosition).trim();
         String deadline = arguments.substring(byPosition + "/by".length()).trim();
         if (description.isEmpty()) {
-            printDeadlineError("the task description is missing");
-            return;
+            throw createDeadlineException("the task description is missing");
         }
         if (deadline.isEmpty()) {
-            printDeadlineError("the deadline date or time is missing");
-            return;
+            throw createDeadlineException("the deadline date or time is missing");
         }
 
         addTask(new Deadline(description, deadline));
     }
 
     /**
-     * Displays a detailed deadline error with the required command format.
+     * Creates a detailed deadline error with the required command format.
      *
      * @param reason Explanation of why the deadline command is invalid.
+     * @return Exception containing the error and correction instructions.
      */
-    private static void printDeadlineError(String reason) {
-        System.out.println("Unable to add the deadline: " + reason + ".");
-        System.out.println("Use this format: deadline <description> /by <date or time>");
-        System.out.println("Example: deadline return book /by tomorrow");
+    private static AlfredException createDeadlineException(String reason) {
+        return new AlfredException("Unable to add the deadline: " + reason + ".\n"
+                + "Use this format: deadline <description> /by <date or time>\n"
+                + "Example: deadline return book /by tomorrow");
     }
 
     /**
@@ -219,48 +208,44 @@ public class Alfred {
      *
      * @param command Full command entered by the user.
      */
-    private static void addEvent(String command) {
+    private static void addEvent(String command) throws AlfredException {
         String arguments = command.substring("event".length()).trim();
         int fromPosition = arguments.indexOf("/from");
         if (fromPosition < 0) {
-            printEventError("the /from marker is missing");
-            return;
+            throw createEventException("the /from marker is missing");
         }
 
         int toPosition = arguments.indexOf("/to", fromPosition + "/from".length());
         if (toPosition < 0) {
-            printEventError("the /to marker is missing");
-            return;
+            throw createEventException("the /to marker is missing");
         }
 
         String description = arguments.substring(0, fromPosition).trim();
         String start = arguments.substring(fromPosition + "/from".length(), toPosition).trim();
         String end = arguments.substring(toPosition + "/to".length()).trim();
         if (description.isEmpty()) {
-            printEventError("the task description is missing");
-            return;
+            throw createEventException("the task description is missing");
         }
         if (start.isEmpty()) {
-            printEventError("the start date or time is missing");
-            return;
+            throw createEventException("the start date or time is missing");
         }
         if (end.isEmpty()) {
-            printEventError("the end date or time is missing");
-            return;
+            throw createEventException("the end date or time is missing");
         }
 
         addTask(new Event(description, start, end));
     }
 
     /**
-     * Displays a detailed event error with the required command format.
+     * Creates a detailed event error with the required command format.
      *
      * @param reason Explanation of why the event command is invalid.
+     * @return Exception containing the error and correction instructions.
      */
-    private static void printEventError(String reason) {
-        System.out.println("Unable to add the event: " + reason + ".");
-        System.out.println("Use this format: event <description> /from <start> /to <end>");
-        System.out.println("Example: event project meeting /from Mon 2pm /to 4pm");
+    private static AlfredException createEventException(String reason) {
+        return new AlfredException("Unable to add the event: " + reason + ".\n"
+                + "Use this format: event <description> /from <start> /to <end>\n"
+                + "Example: event project meeting /from Mon 2pm /to 4pm");
     }
 
     /**
@@ -268,10 +253,9 @@ public class Alfred {
      *
      * @param task Task to add.
      */
-    private static void addTask(Task task) {
+    private static void addTask(Task task) throws AlfredException {
         if (taskCount >= tasks.length) {
-            System.out.println("The task list is full.");
-            return;
+            throw new AlfredException("The task list is full.");
         }
 
         tasks[taskCount] = task;

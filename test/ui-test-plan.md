@@ -209,3 +209,480 @@ ____________________________________________________________
 ```
 
 After Step 3 passes, close standard input so the application exits normally.
+
+### TEST-05: Reject invalid additions without changing the task list
+
+**Aim:** Verify that invalid task commands do not add partial tasks or prevent later valid commands from succeeding.
+
+**Preconditions:** The application has just started and the in-memory task list is empty.
+
+#### Step 1
+
+**Input**
+
+```text
+todo prepare slides
+```
+
+**Expected output**
+
+```text
+____________________________________________________________
+Understood Master Wayne, I've added this task:
+  [T][ ] prepare slides
+Now you have 1 tasks in the list.
+____________________________________________________________
+```
+
+#### Step 2
+
+**Input**
+
+```text
+deadline /by Friday
+```
+
+**Expected output**
+
+```text
+____________________________________________________________
+Unable to add the deadline: the task description is missing.
+Use this format: deadline <description> /by <date or time>
+Example: deadline return book /by tomorrow
+____________________________________________________________
+```
+
+#### Step 3
+
+**Input**
+
+```text
+deadline submit report /by Friday
+```
+
+**Expected output**
+
+```text
+____________________________________________________________
+Understood Master Wayne, I've added this task:
+  [D][ ] submit report (by: Friday)
+Now you have 2 tasks in the list.
+____________________________________________________________
+```
+
+#### Step 4
+
+**Input**
+
+```text
+event team sync /from /to 4pm
+```
+
+**Expected output**
+
+```text
+____________________________________________________________
+Unable to add the event: the start date or time is missing.
+Use this format: event <description> /from <start> /to <end>
+Example: event project meeting /from Mon 2pm /to 4pm
+____________________________________________________________
+```
+
+#### Step 5
+
+**Input**
+
+```text
+event team sync /from 3pm /to 4pm
+```
+
+**Expected output**
+
+```text
+____________________________________________________________
+Understood Master Wayne, I've added this task:
+  [E][ ] team sync (from: 3pm to: 4pm)
+Now you have 3 tasks in the list.
+____________________________________________________________
+```
+
+#### Step 6
+
+**Input**
+
+```text
+todo
+```
+
+**Expected output**
+
+```text
+____________________________________________________________
+The description of a todo cannot be empty.
+____________________________________________________________
+```
+
+#### Step 7
+
+**Input**
+
+```text
+list
+```
+
+**Expected output**
+
+```text
+____________________________________________________________
+These are your tasks Master Wayne:
+1.[T][ ] prepare slides
+2.[D][ ] submit report (by: Friday)
+3.[E][ ] team sync (from: 3pm to: 4pm)
+____________________________________________________________
+```
+
+After Step 7 passes, close standard input so the application exits normally.
+
+### TEST-06: Reject invalid status commands without changing task states
+
+**Aim:** Verify that malformed, out-of-range, and command-prefix inputs do not mark or unmark unintended tasks.
+
+**Preconditions:** The application has just started and the in-memory task list is empty.
+
+#### Step 1
+
+**Input**
+
+```text
+todo first task
+```
+
+**Expected output**
+
+```text
+____________________________________________________________
+Understood Master Wayne, I've added this task:
+  [T][ ] first task
+Now you have 1 tasks in the list.
+____________________________________________________________
+```
+
+#### Step 2
+
+**Input**
+
+```text
+todo second task
+```
+
+**Expected output**
+
+```text
+____________________________________________________________
+Understood Master Wayne, I've added this task:
+  [T][ ] second task
+Now you have 2 tasks in the list.
+____________________________________________________________
+```
+
+#### Step 3
+
+**Input**
+
+```text
+mark 1
+```
+
+**Expected output**
+
+```text
+____________________________________________________________
+Excellent work Master Wayne! I've marked this task as done:
+  [T][X] first task
+____________________________________________________________
+```
+
+#### Step 4
+
+**Input**
+
+```text
+mark abc
+```
+
+**Expected output**
+
+```text
+____________________________________________________________
+Please provide a valid task number.
+____________________________________________________________
+```
+
+#### Step 5
+
+**Input**
+
+```text
+unmark 3
+```
+
+**Expected output**
+
+```text
+____________________________________________________________
+Invalid task number.
+____________________________________________________________
+```
+
+#### Step 6
+
+**Input**
+
+```text
+market 2
+```
+
+**Expected output**
+
+```text
+____________________________________________________________
+Pardon me Master Wayne, I did not quite get that.
+____________________________________________________________
+```
+
+#### Step 7
+
+**Input**
+
+```text
+list
+```
+
+**Expected output**
+
+```text
+____________________________________________________________
+These are your tasks Master Wayne:
+1.[T][X] first task
+2.[T][ ] second task
+____________________________________________________________
+```
+
+#### Step 8
+
+**Input**
+
+```text
+unmark 1
+```
+
+**Expected output**
+
+```text
+____________________________________________________________
+Alright Master Wayne, I have unmarked this task as requested:
+  [T][ ] first task
+____________________________________________________________
+```
+
+#### Step 9
+
+**Input**
+
+```text
+unmark 0
+```
+
+**Expected output**
+
+```text
+____________________________________________________________
+Invalid task number.
+____________________________________________________________
+```
+
+#### Step 10
+
+**Input**
+
+```text
+list
+```
+
+**Expected output**
+
+```text
+____________________________________________________________
+These are your tasks Master Wayne:
+1.[T][ ] first task
+2.[T][ ] second task
+____________________________________________________________
+```
+
+After Step 10 passes, close standard input so the application exits normally.
+
+### TEST-07: Recover from malformed commands while preserving task order
+
+**Aim:** Verify that Alfred continues accepting valid commands after errors and never inserts malformed tasks.
+
+**Preconditions:** The application has just started and the in-memory task list is empty.
+
+#### Step 1
+
+**Input**
+
+```text
+deadline read book
+```
+
+**Expected output**
+
+```text
+____________________________________________________________
+Unable to add the deadline: the /by marker is missing.
+Use this format: deadline <description> /by <date or time>
+Example: deadline return book /by tomorrow
+____________________________________________________________
+```
+
+#### Step 2
+
+**Input**
+
+```text
+list
+```
+
+**Expected output**
+
+```text
+____________________________________________________________
+These are your tasks Master Wayne:
+____________________________________________________________
+```
+
+#### Step 3
+
+**Input**
+
+```text
+deadline read book /by Sunday
+```
+
+**Expected output**
+
+```text
+____________________________________________________________
+Understood Master Wayne, I've added this task:
+  [D][ ] read book (by: Sunday)
+Now you have 1 tasks in the list.
+____________________________________________________________
+```
+
+#### Step 4
+
+**Input**
+
+```text
+event product launch /from Monday
+```
+
+**Expected output**
+
+```text
+____________________________________________________________
+Unable to add the event: the /to marker is missing.
+Use this format: event <description> /from <start> /to <end>
+Example: event project meeting /from Mon 2pm /to 4pm
+____________________________________________________________
+```
+
+#### Step 5
+
+**Input**
+
+```text
+list
+```
+
+**Expected output**
+
+```text
+____________________________________________________________
+These are your tasks Master Wayne:
+1.[D][ ] read book (by: Sunday)
+____________________________________________________________
+```
+
+#### Step 6
+
+**Input**
+
+```text
+event product launch /from Monday /to Tuesday
+```
+
+**Expected output**
+
+```text
+____________________________________________________________
+Understood Master Wayne, I've added this task:
+  [E][ ] product launch (from: Monday to: Tuesday)
+Now you have 2 tasks in the list.
+____________________________________________________________
+```
+
+#### Step 7
+
+**Input**
+
+```text
+todo
+```
+
+**Expected output**
+
+```text
+____________________________________________________________
+The description of a todo cannot be empty.
+____________________________________________________________
+```
+
+#### Step 8
+
+**Input**
+
+```text
+todo pack bags
+```
+
+**Expected output**
+
+```text
+____________________________________________________________
+Understood Master Wayne, I've added this task:
+  [T][ ] pack bags
+Now you have 3 tasks in the list.
+____________________________________________________________
+```
+
+#### Step 9
+
+**Input**
+
+```text
+list
+```
+
+**Expected output**
+
+```text
+____________________________________________________________
+These are your tasks Master Wayne:
+1.[D][ ] read book (by: Sunday)
+2.[E][ ] product launch (from: Monday to: Tuesday)
+3.[T][ ] pack bags
+____________________________________________________________
+```
+
+After Step 9 passes, close standard input so the application exits normally.
