@@ -1,4 +1,4 @@
-package alfred;
+package alfred.task;
 
 /**
  * Represents a task and its completion status.

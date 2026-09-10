@@ -1,4 +1,4 @@
-package alfred;
+package alfred.task;
 
 /**
  * Represents a task that occurs between specified start and end times.

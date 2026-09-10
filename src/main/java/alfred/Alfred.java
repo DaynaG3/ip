@@ -1,5 +1,9 @@
 package alfred;
 
+import alfred.task.Deadline;
+import alfred.task.Event;
+import alfred.task.Task;
+import alfred.task.Todo;
 import java.util.Scanner;
 
 /**
