@@ -54,8 +54,12 @@ public class Alfred {
                 printGoodbyeMessage();
                 break;
             }
+            try {
+                processCommand(command);
+            } catch (AlfredException exception) {
+                System.out.println(exception.getMessage());
+            }
 
-            processCommand(command);
             System.out.println(DIVIDER);
         }
     }
@@ -84,7 +88,7 @@ public class Alfred {
      *
      * @param command Full command entered by the user.
      */
-    private static void processCommand(String command) {
+    private static void processCommand(String command) throws AlfredException {
         if (command.equals("list")) {
             printTaskList();
         } else if (command.startsWith("unmark")) {
@@ -98,7 +102,7 @@ public class Alfred {
         } else if (command.equals("event") || command.startsWith("event ")) {
             addEvent(command);
         } else {
-            System.out.println("Pardon me Master Wayne, I did not quite get that.");
+            throw new AlfredException("Pardon me Master Wayne, I did not quite get that.");
         }
     }
 
@@ -149,7 +153,8 @@ public class Alfred {
     /**
      * Displays the missing-number error for a mark or unmark command.
      *
-     * @param isMarkAsDone Whether the command was intended to mark a task as done.
+     * @param isMarkAsDone Whether the command was intended to mark a task as
+     * done.
      */
     private static void printMissingTaskNumberError(boolean isMarkAsDone) {
         if (isMarkAsDone) {
@@ -164,11 +169,10 @@ public class Alfred {
      *
      * @param command Full command entered by the user.
      */
-    private static void addTodo(String command) {
+    private static void addTodo(String command) throws AlfredException {
         String description = command.substring("todo".length()).trim();
         if (description.isEmpty()) {
-            System.out.println("The description of a todo cannot be empty.");
-            return;
+            throw new AlfredException("The description of a todo cannot be empty.");
         }
 
         addTask(new Todo(description));
