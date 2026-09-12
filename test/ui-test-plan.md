@@ -8,8 +8,8 @@ This file is the source of truth for scripted acceptance tests of the interactiv
 - **Working directory:** Repository root
 - **Build command:** `javac -d src/main/java/out -sourcepath src/main/java src/main/java/alfred/Alfred.java`
 - **Launch command:** `java -cp src/main/java/out alfred.Alfred`
-- **State setup:** Delete `data/alfred.txt` before each test case. Startup loading is not implemented yet, so each
-  application process starts with an empty in-memory task list.
+- **State setup:** Delete `data/alfred.txt` before each test case unless its preconditions specify seeded file data.
+  Without a data file, each application process starts with an empty task list.
 - **State cleanup:** Close standard input after the assertions so the application exits normally, then delete
   `data/alfred.txt` if it exists.
 - **Comparison:** Compare exact application output after normalizing only `CRLF` and `LF` line endings. Terminal input echo is included in the transcript but excluded from comparison.
@@ -731,3 +731,64 @@ ____________________________________________________________
 ```
 
 After Step 9 passes, close standard input so the application exits normally.
+
+### TEST-08: Load saved tasks on startup
+
+**Aim:** Verify that Alfred restores every task type and completion status from the data file, then preserves the
+loaded tasks when a new task is added.
+
+**Preconditions:** Before starting the application, create `data/alfred.txt` with exactly this content:
+
+```text
+T | 1 | read book
+D | 0 | return book | Sunday
+E | 1 | project meeting | Mon 2pm | 4pm
+```
+
+#### Step 1
+
+**Input**
+
+```text
+list
+```
+
+**Expected output**
+
+```text
+____________________________________________________________
+These are your tasks Master Wayne:
+1.[T][X] read book
+2.[D][ ] return book (by: Sunday)
+3.[E][X] project meeting (from: Mon 2pm to: 4pm)
+____________________________________________________________
+```
+
+#### Step 2
+
+**Input**
+
+```text
+todo pack bags
+```
+
+**Expected output**
+
+```text
+____________________________________________________________
+Understood Master Wayne, I've added this task:
+  [T][ ] pack bags
+Now you have 4 tasks in the list.
+____________________________________________________________
+```
+
+**Expected data file**
+
+```text
+T | 1 | read book
+D | 0 | return book | Sunday
+E | 1 | project meeting | Mon 2pm | 4pm
+T | 0 | pack bags
+```
+
+After Step 2 passes, close standard input so the application exits normally.

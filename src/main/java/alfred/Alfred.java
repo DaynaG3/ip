@@ -1,10 +1,5 @@
 package alfred;
 
-import alfred.exception.AlfredException;
-import alfred.task.Deadline;
-import alfred.task.Event;
-import alfred.task.Task;
-import alfred.task.Todo;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -12,6 +7,12 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+
+import alfred.exception.AlfredException;
+import alfred.task.Deadline;
+import alfred.task.Event;
+import alfred.task.Task;
+import alfred.task.Todo;
 
 /**
  * Runs the Alfred command-line chatbot.
@@ -61,6 +62,7 @@ public class Alfred {
      * @param args Command-line arguments. Alfred does not use them.
      */
     public static void main(String[] args) throws IOException {
+        loadTasks();
         printWelcomeMessage();
 
         Scanner scanner = new Scanner(System.in);
@@ -292,10 +294,54 @@ public class Alfred {
     private static void saveTasks() throws IOException {
         Files.createDirectories(DATA_FILE.getParent());
 
-        List<String> taskData = new ArrayList<>();
+        List<String> taskDataLines = new ArrayList<>();
         for (int i = 0; i < taskCount; i++) {
-            taskData.add(tasks[i].toDataString());
+            taskDataLines.add(tasks[i].toDataString());
         }
-        Files.write(DATA_FILE, taskData, StandardCharsets.UTF_8);
+        Files.write(DATA_FILE, taskDataLines, StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Loads tasks from the data file when it exists.
+     */
+    private static void loadTasks() throws IOException {
+        if (Files.notExists(DATA_FILE)) {
+            return;
+        }
+
+        List<String> taskDataLines = Files.readAllLines(DATA_FILE, StandardCharsets.UTF_8);
+        for (String taskLine : taskDataLines) {
+            Task task = createTaskFromData(taskLine);
+            tasks[taskCount] = task;
+            taskCount++;
+        }
+    }
+
+    /**
+     * Recreates a task from one line of stored task data.
+     *
+     * @param taskData Pipe-delimited task data.
+     * @return Task represented by the stored data.
+     */
+    private static Task createTaskFromData(String taskData) {
+        String[] fields = taskData.split(" \\| ", -1);
+        String taskType = fields[0];
+        boolean isDone = fields[1].equals("1");
+        Task task;
+
+        if (taskType.equals("T")) {
+            task = new Todo(fields[2]);
+        } else if (taskType.equals("D")) {
+            task = new Deadline(fields[2], fields[3]);
+        } else if (taskType.equals("E")) {
+            task = new Event(fields[2], fields[3], fields[4]);
+        } else {
+            throw new IllegalArgumentException("Unknown task type: " + taskType);
+        }
+
+        if (isDone) {
+            task.markAsDone();
+        }
+        return task;
     }
 }
