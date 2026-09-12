@@ -8,9 +8,13 @@ This file is the source of truth for scripted acceptance tests of the interactiv
 - **Working directory:** Repository root
 - **Build command:** `javac -d src/main/java/out -sourcepath src/main/java src/main/java/alfred/Alfred.java`
 - **Launch command:** `java -cp src/main/java/out alfred.Alfred`
-- **State setup:** None. Tasks are stored only in memory and each application process starts with an empty list.
-- **State cleanup:** Close standard input after the assertions so the application exits normally.
+- **State setup:** Delete `data/alfred.txt` before each test case. Startup loading is not implemented yet, so each
+  application process starts with an empty in-memory task list.
+- **State cleanup:** Close standard input after the assertions so the application exits normally, then delete
+  `data/alfred.txt` if it exists.
 - **Comparison:** Compare exact application output after normalizing only `CRLF` and `LF` line endings. Terminal input echo is included in the transcript but excluded from comparison.
+- **Data-file comparison:** Where an expected data file is specified, compare `data/alfred.txt` after the command,
+  normalizing only `CRLF` and `LF` line endings.
 - **Timeouts:** Allow 10 seconds for startup and 5 seconds for each command response.
 
 ## Test cases
@@ -19,7 +23,8 @@ Each test case runs in a fresh application process unless its preconditions say 
 
 ### TEST-01: Add and list all task types
 
-**Aim:** Verify that todos, deadlines, and events are added with their type-specific details and listed in order.
+**Aim:** Verify that todos, deadlines, and events are added with their type-specific details, listed in order, and
+saved to the data file after each addition.
 
 **Preconditions:** The application has just started and the in-memory task list is empty.
 
@@ -41,6 +46,12 @@ Now you have 1 tasks in the list.
 ____________________________________________________________
 ```
 
+**Expected data file**
+
+```text
+T | 0 | borrow book
+```
+
 #### Step 2
 
 **Input**
@@ -59,6 +70,13 @@ Now you have 2 tasks in the list.
 ____________________________________________________________
 ```
 
+**Expected data file**
+
+```text
+T | 0 | borrow book
+D | 0 | return book | Sunday
+```
+
 #### Step 3
 
 **Input**
@@ -75,6 +93,14 @@ Understood Master Wayne, I've added this task:
   [E][ ] project meeting (from: Mon 2pm to: 4pm)
 Now you have 3 tasks in the list.
 ____________________________________________________________
+```
+
+**Expected data file**
+
+```text
+T | 0 | borrow book
+D | 0 | return book | Sunday
+E | 0 | project meeting | Mon 2pm | 4pm
 ```
 
 #### Step 4
@@ -152,7 +178,8 @@ After Step 1 passes, close standard input so the application exits normally.
 
 ### TEST-04: Mark and unmark a task
 
-**Aim:** Verify that a task can be marked as done and then restored to not done.
+**Aim:** Verify that a task can be marked as done and then restored to not done, with each status saved to the data
+file.
 
 **Preconditions:** The application has just started and the in-memory task list is empty.
 
@@ -174,6 +201,12 @@ Now you have 1 tasks in the list.
 ____________________________________________________________
 ```
 
+**Expected data file**
+
+```text
+T | 0 | borrow book
+```
+
 #### Step 2
 
 **Input**
@@ -191,6 +224,12 @@ Excellent work Master Wayne! I've marked this task as done:
 ____________________________________________________________
 ```
 
+**Expected data file**
+
+```text
+T | 1 | borrow book
+```
+
 #### Step 3
 
 **Input**
@@ -206,6 +245,12 @@ ____________________________________________________________
 Alright Master Wayne, I have unmarked this task as requested:
   [T][ ] borrow book
 ____________________________________________________________
+```
+
+**Expected data file**
+
+```text
+T | 0 | borrow book
 ```
 
 After Step 3 passes, close standard input so the application exits normally.

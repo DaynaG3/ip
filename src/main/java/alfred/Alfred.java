@@ -5,6 +5,12 @@ import alfred.task.Deadline;
 import alfred.task.Event;
 import alfred.task.Task;
 import alfred.task.Todo;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -13,14 +19,21 @@ import java.util.Scanner;
 public class Alfred {
 
     private static final int MAX_TASKS = 100;
+    private static final Path DATA_FILE = Path.of("data", "alfred.txt");
     private static final String DIVIDER = "____________________________________________________________";
     private static final String BANNER
-            = "         █████╗ ██╗     ███████╗██████╗ ███████╗██████╗\n"
-            + "        ██╔══██╗██║     ██╔════╝██╔══██╗██╔════╝██╔══██╗\n"
-            + "        ███████║██║     █████╗  ██████╔╝█████╗  ██║  ██║\n"
-            + "        ██╔══██║██║     ██╔══╝  ██╔══██╗██╔══╝  ██║  ██║\n"
-            + "        ██║  ██║███████╗██║     ██║  ██║███████╗██████╔╝\n"
-            + "        ╚═╝  ╚═╝╚══════╝╚═╝     ╚═╝  ╚═╝╚══════╝╚═════╝ ";
+            = "         █████╗ ██╗     ███████╗██████╗"
+            + " ███████╗██████╗\n"
+            + "        ██╔══██╗██║     ██╔════╝██╔══██╗"
+            + "██╔════╝██╔══██╗\n"
+            + "        ███████║██║     █████╗  ██████╔╝"
+            + "█████╗  ██║  ██║\n"
+            + "        ██╔══██║██║     ██╔══╝  ██╔══██╗"
+            + "██╔══╝  ██║  ██║\n"
+            + "        ██║  ██║███████╗██║     ██║  ██║"
+            + "███████╗██████╔╝\n"
+            + "        ╚═╝  ╚═╝╚══════╝╚═╝     ╚═╝  ╚═╝"
+            + "╚══════╝╚═════╝ ";
     private static final String BAT_LOGO
             = "              *         *      *         *               \n"
             + "          ***          **********          ***           \n"
@@ -47,7 +60,7 @@ public class Alfred {
      *
      * @param args Command-line arguments. Alfred does not use them.
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         printWelcomeMessage();
 
         Scanner scanner = new Scanner(System.in);
@@ -93,7 +106,7 @@ public class Alfred {
      *
      * @param command Full command entered by the user.
      */
-    private static void processCommand(String command) throws AlfredException {
+    private static void processCommand(String command) throws AlfredException, IOException {
         if (command.equals("list")) {
             printTaskList();
         } else if (command.equals("unmark") || command.startsWith("unmark ")) {
@@ -127,7 +140,8 @@ public class Alfred {
      * @param command Full command entered by the user.
      * @param isMarkAsDone Whether the task should be marked as done.
      */
-    private static void updateTaskStatus(String command, boolean isMarkAsDone) throws AlfredException {
+    private static void updateTaskStatus(String command, boolean isMarkAsDone)
+            throws AlfredException, IOException {
         String[] parts = command.trim().split("\\s+");
         if (parts.length != 2) {
             if (isMarkAsDone) {
@@ -150,6 +164,7 @@ public class Alfred {
                 task.markAsNotDone();
                 System.out.println("Alright Master Wayne, I have unmarked this task as requested:");
             }
+            saveTasks();
             System.out.println("  " + task);
         } catch (NumberFormatException exception) {
             throw new AlfredException("Please provide a valid task number.");
@@ -161,7 +176,7 @@ public class Alfred {
      *
      * @param command Full command entered by the user.
      */
-    private static void addTodo(String command) throws AlfredException {
+    private static void addTodo(String command) throws AlfredException, IOException {
         String description = command.substring("todo".length()).trim();
         if (description.isEmpty()) {
             throw new AlfredException("The description of a todo cannot be empty.");
@@ -176,7 +191,7 @@ public class Alfred {
      *
      * @param command Full command entered by the user.
      */
-    private static void addDeadline(String command) throws AlfredException {
+    private static void addDeadline(String command) throws AlfredException, IOException {
         String arguments = command.substring("deadline".length()).trim();
         int byPosition = arguments.indexOf("/by");
         if (byPosition < 0) {
@@ -213,7 +228,7 @@ public class Alfred {
      *
      * @param command Full command entered by the user.
      */
-    private static void addEvent(String command) throws AlfredException {
+    private static void addEvent(String command) throws AlfredException, IOException {
         String arguments = command.substring("event".length()).trim();
         int fromPosition = arguments.indexOf("/from");
         if (fromPosition < 0) {
@@ -258,15 +273,29 @@ public class Alfred {
      *
      * @param task Task to add.
      */
-    private static void addTask(Task task) throws AlfredException {
+    private static void addTask(Task task) throws AlfredException, IOException {
         if (taskCount >= tasks.length) {
             throw new AlfredException("The task list is full.");
         }
 
         tasks[taskCount] = task;
         taskCount++;
+        saveTasks();
         System.out.println("Understood Master Wayne, I've added this task:");
         System.out.println("  " + task);
         System.out.println("Now you have " + taskCount + " tasks in the list.");
+    }
+
+    /**
+     * Writes the current task list to the data file.
+     */
+    private static void saveTasks() throws IOException {
+        Files.createDirectories(DATA_FILE.getParent());
+
+        List<String> taskData = new ArrayList<>();
+        for (int i = 0; i < taskCount; i++) {
+            taskData.add(tasks[i].toDataString());
+        }
+        Files.write(DATA_FILE, taskData, StandardCharsets.UTF_8);
     }
 }
